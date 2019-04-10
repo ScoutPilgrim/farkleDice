@@ -10,6 +10,9 @@
   </head>
   <body>
     <div class="container">
+      <div class="centerWrap">
+        <h1>Farkle Solitaire</h1>
+      </div>
       <form id="butForm">
         <div class="form-group">
           <button type="submit" class="btn btn-primary form-control">Roll the dice!</button>
@@ -40,8 +43,18 @@
           <button type="button" id="resetSel" class="btn btn-primary">Deselect Dice</button>
         </div>
         <div class="col">
-          <button type="button" id="submitVal" class="btn btn-danger">Submit Dice</button>
+          <button disabled type="button" id="submitVal" class="btn btn-warning">Submit Dice</button>
         </div>
+        <div class="col">
+          <button type="button" id="endTurn" class="btn btn-danger">End Turn</button>
+        </div>
+      </div>
+      <div id='playerScore'>
+        <h3 id='roundScore'>Round Score: 0</h3>
+        <h3 id='totalScore'>Total Score: 0</h3>
+      </div>
+      <div class="busted centerWrap">
+        <h2>Bust!</h2>
       </div>
     </div>
   </body>

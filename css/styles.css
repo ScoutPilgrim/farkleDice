@@ -1,3 +1,9 @@
 .pad{
   padding-top: 10%;
 }
+.busted{
+  display: none;
+}
+.centerWrap{
+  text-align: center;
+}

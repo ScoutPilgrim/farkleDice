@@ -51,6 +51,7 @@ class Player{
   playerDice = [];
   playerRoll = [];
   playerSel = [];
+  nonWinners = [2,3,4,6];
 }
 
 Player.prototype.resetRollScore = function resetRollScore(){
@@ -61,6 +62,29 @@ Player.prototype.resetPlayerSel = function resetPlayerSel(){
   this.playerSel = [];
 };
 
+//ThisRoll class setup
+class ThisRoll{
+  numOne = 0;
+  numTwo = 0;
+  numThree = 0;
+  numFour = 0;
+  numFive = 0;
+  numSix = 0;
+  rollBust = false;
+  tripleMatch = [];
+}
+
+ThisRoll.prototype.resetRollNum = function resetRollNum(){
+  this.numOne = 0;
+  this.numTwo = 0;
+  this.numThree = 0;
+  this.numFour = 0;
+  this.numFive = 0;
+  this.numSix = 0;
+  this.rollBust = false;
+  this.isFlush = false;
+  this.tripleMatch = [];
+};
 //helper Functions
 function initDice(playerDice){
   for(var i = 0; i < 6; i++){
@@ -98,8 +122,181 @@ function leftOverButtons(myNum){
     $(myId).prop('disabled', true);
   }
 };
+function isBust(playerClass, rollClass){
+  for(var i = 0; i < playerClass.playerRoll.length; i++){
+    //console.log(playerClass.playerRoll[i]);
+    dieNum(rollClass, playerClass.playerRoll[i]);
+  }
+  if(rollClass.numOne > 0 || rollClass.numFive > 0){
+    return false;
+  }
+  if(rollClass.numThree >= 3 || rollClass.numFour >= 3 || rollClass.numFive >= 3 || rollClass.numSix >= 3){
+    return false;
+  }else{
+    return true;
+  }
+};
+function canSubmit(playerClass, rollClass){
+  var oneOrFive = false;
+  var tripleNum = false;
+  for(var i = 0; i < playerClass.playerSel.length; i++){
+    //console.log(playerClass.playerRoll[i]);
+    dieNum(rollClass, playerClass.playerSel[i]);
+    // console.log(rollClass.numOne);
+    // console.log(rollClass.numTwo);
+    // console.log(rollClass.numThree);
+    // console.log(rollClass.numFour);
+    // console.log(rollClass.numFive);
+    // console.log(rollClass.numSix);
+  }
+  oneOrFive = subConditionalsOneFive(rollClass);
+  tripleNum = subConditionalsTriples(rollClass, playerClass);
+  if(oneOrFive && tripleNum){
+    return true;
+  }
+  if(rollClass.numOne === 1 && rollClass.numTwo === 1 && rollClass.numThree === 1 && rollClass.numFour === 1 && rollClass.numFive === 1 && rollClass.numSix === 1){
+    rollClass.isFlush = true;
+    return true;
+  }
+  return false;
+};
+function subConditionalsOneFive(rollClass){
+  if(rollClass.numOne > 2){
+    rollClass.tripleMatch.push[1];
+    return true;
+  }
+  if(rollClass.numFive > 2){
+    rollClass.tripleMatch.push[5];
+    return true;
+  }
+  return true;
+};
+function subConditionalsTriples(rollClass, playerClass){
+  var tripleCondition = false;
+  var noLoners =  false;
+  var onlyWinners = false;
+  for(var i = 0; i < playerClass.playerSel.length; i++){
+    if(playerClass.nonWinners.indexOf(playerClass.playerSel[i]) === -1){
+      onlyWinners = true;
+    }else{
+      onlyWinners = false;
+      break;
+    }
+  }
+  console.log(onlyWinners);
+  if(onlyWinners){
+    noLoners = true;
+    return noLoners;
+  }
+  if(rollClass.numTwo > 2){
+    tripleCondition = true;
+    rollClass.tripleMatch.push(2);
+  }
+  if(rollClass.numThree > 2){
+    tripleCondition = true;
+    rollClass.tripleMatch.push(3);
+  }
+  if(rollClass.numFour > 2){
+    tripleCondition = true;
+    rollClass.tripleMatch.push(4);
+  }
+  if(rollClass.numSix > 2){
+    tripleCondition = true;
+    rollClass.tripleMatch.push(6);
+  }
+  if(tripleCondition){
+    for(var i = 0; i < playerClass.playerSel.length; i++){
+      if(playerClass.nonWinners.indexOf(playerClass.playerSel[i]) != -1){
+        if(rollClass.tripleMatch.indexOf(playerClass.playerSel[i]) != -1){
+          noLoners = true;
+        }else{
+          noLoners = false;
+        }
+      }
+    }
+  }
+  return noLoners;
+};
+function dieNum(rollClass, myNum){
+  switch (myNum) {
+    case 1:
+      rollClass.numOne++;
+      break;
+    case 2:
+      rollClass.numTwo++;
+      break;
+    case 3:
+      rollClass.numThree++;
+      break;
+    case 4:
+      rollClass.numFour++;
+      break;
+    case 5:
+      rollClass.numFive++;
+      break;
+    case 6:
+      rollClass.numSix++;
+      break;
+  }
+};
+function calcScore(rollClass, playerClass){
+  if(rollClass.isFlush){
+    playerClass.rollScore += 1500;
+    return;
+  }
+  if(rollClass.numOne){
+    playerClass.rollScore += compoundScore(1, rollClass.numOne);
+  }
+  if(rollClass.numTwo){
+    playerClass.rollScore += compoundScore(2, rollClass.numTwo);
+  }
+  if(rollClass.numThree){
+    playerClass.rollScore += compoundScore(3, rollClass.numThree);
+  }
+  if(rollClass.numFour){
+    playerClass.rollScore += compoundScore(4, rollClass.numFour);
+  }
+  if(rollClass.numFive){
+    playerClass.rollScore += compoundScore(5, rollClass.numFive);
+  }
+  if(rollClass.numSix){
+    playerClass.rollScore += compoundScore(6, rollClass.numSix);
+  }
+};
+function compoundScore(myNum, numAmt){
+  switch (myNum) {
+    case 1:
+      if(numAmt <= 2){
+        return 100*numAmt;
+      }else{
+        return 1000 * Math.pow(2,(numAmt-3));
+      }
+      break;
+    case 5:
+      if(numAmt <= 2){
+        return 50*numAmt;
+      }else{
+        return 500 * Math.pow(2,(numAmt-3));
+      }
+      break;
+    case 2:
+      return 200 * Math.pow(2,(numAmt-3));
+      break;
+    case 3:
+      return 300 * Math.pow(2,(numAmt-3));
+      break;
+    case 4:
+      return 400 * Math.pow(2,(numAmt-3));
+      break;
+    case 6:
+      return 600 * Math.pow(2,(numAmt-3));
+      break;
+  }
+};
 //globals
 let playerOne = new Player();
+let myRollClass =  new ThisRoll();
+let selectedDice = new ThisRoll();
 initDice(playerOne.playerDice);
 
 
@@ -108,20 +305,42 @@ $(document).ready(function(){
   $('#butForm').submit(function(event){
     event.preventDefault();
     console.log('butForm is being submitted');
+    selectedDice.resetRollNum();
+    myRollClass.resetRollNum();
+    for(var i = 0; i < 6; i++){
+      var num = i + 1;
+      var myId = '#diceBut' + num;
+      $(myId).prop('disabled', false);
+    }
     myRoll(playerOne.playerDice, playerOne.playerRoll);
     console.log(playerOne.playerDice);
     console.log('Your roll is: \n' + playerOne.playerRoll);
     populateButtons(playerOne.playerRoll);
+    myRollClass.rollBust = isBust(playerOne, myRollClass);
+    if(myRollClass.rollBust){
+      $('.busted').show();
+      playerOne.rollScore = 0;
+    }
   });
 
   $('.clickable').click(function(event){
+    var submitFlag = false;
+    selectedDice.resetRollNum();
     $(this).prop('disabled', true);
     var myVal = parseInt($(this).html());
     playerOne.playerSel.push(myVal);
+    submitFlag = canSubmit(playerOne, selectedDice);
+    if(submitFlag){
+      $('#submitVal').prop('disabled', false);
+    }else{
+      $('#submitVal').prop('disabled', true);
+    }
   });
   $('#resetSel').click(function(){
     console.log('resetSel is clicked');
+    selectedDice.resetRollNum();
     playerOne.playerSel = [];
+    $('#submitVal').prop('disabled', true);
     for(var i = 0; i < playerOne.playerDice.length; i++){
       var num = i + 1;
       var myId = '#diceBut' + num;
@@ -130,14 +349,24 @@ $(document).ready(function(){
   });
   $('#submitVal').click(function(){
     console.log('submitVal is being clicked');
+    $('#submitVal').prop('disabled', true);
+    $('#resetSel').prop('disabled', true);
+    for(var i = 0; i < 6; i++){
+      var num = i + 1;
+      var myId = '#diceBut' + num;
+      $(myId).prop('disabled', true);
+    }
+    var returnStr = 'Round Score: ';
     var index = 0;
     for(var i = 0; i < playerOne.playerSel.length; i++){
       index = playerOne.playerRoll.indexOf(playerOne.playerSel[i]);
       playerOne.playerRoll.splice(index, 1);
       playerOne.playerDice.pop();
+
     }
-    console.log(playerOne.playerRoll);
-    console.log(playerOne.playerDice);
+    calcScore(selectedDice, playerOne);
+    returnStr += playerOne.rollScore;
+    $('#roundScore').text(returnStr);
     playerOne.resetPlayerSel();
   });
 });
