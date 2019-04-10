@@ -296,6 +296,7 @@ function compoundScore(myNum, numAmt){
 };
 //globals
 let playerOne = new Player();
+let computerPlayer = new Player();
 let myRollClass =  new ThisRoll();
 let selectedDice = new ThisRoll();
 initDice(playerOne.playerDice);
@@ -414,6 +415,8 @@ $(document).ready(function(){
       var winningStr = 'Congrats! You won in ' + playerOne.turnNum + ' turns!';
       $('#youWin').show();
       $('#youWin').find('h1').text(winningStr);
+      $('#formBut').prop('disabled', true);
+      $('#endTurn').prop('disabled', true);
       return;
     }
     playerOne.turnNum++;
