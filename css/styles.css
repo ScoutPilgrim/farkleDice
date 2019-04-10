@@ -7,3 +7,6 @@
 .centerWrap{
   text-align: center;
 }
+#youWin{
+  display: none;
+}

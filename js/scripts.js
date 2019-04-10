@@ -48,6 +48,8 @@ SixDice.prototype.resetCurr = function resetCurr(){
 class Player{
   score = 0;
   rollScore = 0;
+  turnNum = 1;
+  winningScore = 1000; //Should be 5000 for non testing
   playerDice = [];
   playerRoll = [];
   playerSel = [];
@@ -60,6 +62,13 @@ Player.prototype.resetRollScore = function resetRollScore(){
 
 Player.prototype.resetPlayerSel = function resetPlayerSel(){
   this.playerSel = [];
+};
+Player.prototype.playerEndTurn = function playerEndTurn(){
+  this.rollScore = 0;
+  this.playerDice = [];
+  this.playerRoll = [];
+  this.playerSel = [];
+  this.nonWinners = [2,3,4,6];
 };
 
 //ThisRoll class setup
@@ -124,7 +133,6 @@ function leftOverButtons(myNum){
 };
 function isBust(playerClass, rollClass){
   for(var i = 0; i < playerClass.playerRoll.length; i++){
-    //console.log(playerClass.playerRoll[i]);
     dieNum(rollClass, playerClass.playerRoll[i]);
   }
   if(rollClass.numOne > 0 || rollClass.numFive > 0){
@@ -140,14 +148,7 @@ function canSubmit(playerClass, rollClass){
   var oneOrFive = false;
   var tripleNum = false;
   for(var i = 0; i < playerClass.playerSel.length; i++){
-    //console.log(playerClass.playerRoll[i]);
     dieNum(rollClass, playerClass.playerSel[i]);
-    // console.log(rollClass.numOne);
-    // console.log(rollClass.numTwo);
-    // console.log(rollClass.numThree);
-    // console.log(rollClass.numFour);
-    // console.log(rollClass.numFive);
-    // console.log(rollClass.numSix);
   }
   oneOrFive = subConditionalsOneFive(rollClass);
   tripleNum = subConditionalsTriples(rollClass, playerClass);
@@ -304,7 +305,13 @@ initDice(playerOne.playerDice);
 $(document).ready(function(){
   $('#butForm').submit(function(event){
     event.preventDefault();
+    $('#formBut').prop('disabled', true);
     console.log('butForm is being submitted');
+    if(playerOne.playerDice.length === 0){
+      initDice(playerOne.playerDice);
+      myRollClass.resetRollNum();
+    }
+    var returnStr = 'Round Score: ';
     selectedDice.resetRollNum();
     myRollClass.resetRollNum();
     for(var i = 0; i < 6; i++){
@@ -320,10 +327,21 @@ $(document).ready(function(){
     if(myRollClass.rollBust){
       $('.busted').show();
       playerOne.rollScore = 0;
+      returnStr += playerOne.rollScore;
+      $('#resetSel').prop('disabled', true);
+      $('#roundScore').text(returnStr);
+      for(var i = 0; i < playerOne.playerDice.length; i++){
+        var num = i + 1;
+        var myId = '#diceBut' + num;
+        $(myId).toggleClass('btn-primary');
+        $(myId).toggleClass('btn-danger');
+        $(myId).prop('disabled', true);
+      }
     }
   });
 
   $('.clickable').click(function(event){
+    $('#resetSel').prop('disabled', false);
     var submitFlag = false;
     selectedDice.resetRollNum();
     $(this).prop('disabled', true);
@@ -349,6 +367,7 @@ $(document).ready(function(){
   });
   $('#submitVal').click(function(){
     console.log('submitVal is being clicked');
+    $('#formBut').prop('disabled', false);
     $('#submitVal').prop('disabled', true);
     $('#resetSel').prop('disabled', true);
     for(var i = 0; i < 6; i++){
@@ -368,5 +387,38 @@ $(document).ready(function(){
     returnStr += playerOne.rollScore;
     $('#roundScore').text(returnStr);
     playerOne.resetPlayerSel();
+  });
+  $('#endTurn').click(function(){
+    console.log('endTurn is being clicked');
+    var returnStr = 'Total Score: ';
+    var resetStr = 'Round Score: 0';
+    var turnStr = 'Turn: '
+    $('.busted').hide();
+    if(!myRollClass.rollBust){
+      playerOne.score += playerOne.rollScore;
+      returnStr += playerOne.score;
+      $('#totalScore').text(returnStr);
+    }
+    for(var i = 0; i < 6; i++){
+      var num = i + 1;
+      var myId = '#diceBut' + num;
+      $(myId).addClass('btn-primary');
+      $(myId).removeClass('btn-danger');
+    }
+    $('#roundScore').text(resetStr);
+    playerOne.playerEndTurn();
+    selectedDice.resetRollNum();
+    myRollClass.resetRollNum();
+    if(playerOne.score >= playerOne.winningScore){
+      console.log('Winner')
+      var winningStr = 'Congrats! You won in ' + playerOne.turnNum + ' turns!';
+      $('#youWin').show();
+      $('#youWin').find('h1').text(winningStr);
+      return;
+    }
+    playerOne.turnNum++;
+    turnStr += playerOne.turnNum;
+    $('#myTurn').text(turnStr);
+    $('#formBut').prop('disabled', false);
   });
 });
