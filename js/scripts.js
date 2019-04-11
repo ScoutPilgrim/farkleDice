@@ -11,7 +11,7 @@ class SixDice{
 
 SixDice.prototype.rollDice = function rollDice(){
   console.log('Rolling the dice...');
-  var myRoll = Math.floor(Math.random()*(6 - 1 + 1)) + 1; //Using MDN setup
+  var myRoll = Math.floor(Math.random()*(6 - 1 + 1)) + 1;
   return myRoll;
 };
 
@@ -138,7 +138,7 @@ function isBust(playerClass, rollClass){
   if(rollClass.numOne > 0 || rollClass.numFive > 0){
     return false;
   }
-  if(rollClass.numThree >= 3 || rollClass.numFour >= 3 || rollClass.numFive >= 3 || rollClass.numSix >= 3){
+  if(rollClass.numTwo >= 3 || rollClass.numThree >= 3 || rollClass.numFour >= 3 || rollClass.numFive >= 3 || rollClass.numSix >= 3){
     return false;
   }else{
     return true;
@@ -294,6 +294,76 @@ function compoundScore(myNum, numAmt){
       break;
   }
 };
+function computerInit(){
+  console.log('Computer is taking their turn...');
+  computerPlayer.playerEndTurn();
+  var myStr = "Opponent's Turn!";
+  $('#whichTurn').text(myStr);
+  $('button').prop('disabled', true);
+  $('button').addClass('btn-success').removeClass('btn-danger').removeClass('btn-warning');
+  selectedDice.resetRollNum();
+  myRollClass.resetRollNum();
+  initDice(computerPlayer.playerDice);
+};
+function computerTurn(){
+  while(computerPlayer.playerDice.length >= 3 || computerPlayer.playerDice.length === 0){
+    myRollClass.resetRollNum();
+    selectedDice.resetRollNum();
+    computerRoll();
+    myRollClass.rollBust = isBust(computerPlayer, myRollClass);
+    if(myRollClass.rollBust){
+      $('.busted').show();
+      //setInterval(playerTurnInit, 2500);
+      return;
+    }
+    computerDecision(computerPlayer);
+    canSubmit(computerPlayer, selectedDice);
+    calcScore(selectedDice, computerPlayer);
+    console.log('Computer Scored ' +computerPlayer.rollScore+ ' this turn!');
+  }
+  return;
+};
+function computerRoll(){
+  console.log('Computer is rolling the dice...');
+  console.log(computerPlayer.playerDice.length);
+  if(computerPlayer.playerDice.length === 0){
+    initDice(computerPlayer.playerDice);
+    myRollClass.resetRollNum();
+  }
+  myRoll(computerPlayer.playerDice, computerPlayer.playerRoll);
+  populateButtons(computerPlayer.playerRoll);
+  $('button').prop('disabled', true);
+};
+function computerDecision(compPlayer){
+  computerPlayer.playerSel = [];
+  for(var i = 0; i < compPlayer.playerRoll.length;i++){
+    console.log(typeof compPlayer.playerRoll[i]);
+    if(compPlayer.playerRoll[i] === 1){
+      compPlayer.playerSel.push(compPlayer.playerRoll[i]);
+    }
+    if(compPlayer.playerRoll[i] === 5){
+      compPlayer.playerSel.push(compPlayer.playerRoll[i]);
+    }
+    if(compPlayer.playerRoll[i] === 2 && myRollClass.numTwo > 2){
+      compPlayer.playerSel.push(compPlayer.playerRoll[i]);
+    }
+    if(compPlayer.playerRoll[i] === 3 && myRollClass.numThree > 2){
+      compPlayer.playerSel.push(compPlayer.playerRoll[i]);
+    }
+    if(compPlayer.playerRoll[i] === 4 && myRollClass.numFour > 2){
+      compPlayer.playerSel.push(compPlayer.playerRoll[i]);
+    }
+    if(compPlayer.playerRoll[i] === 6 && myRollClass.numSix > 2){
+      compPlayer.playerSel.push(compPlayer.playerRoll[i]);
+    }
+  }
+  for(var i = 0; i < compPlayer.playerSel.length; i++){
+    index = compPlayer.playerRoll.indexOf(compPlayer.playerSel[i]);
+    compPlayer.playerRoll.splice(index, 1);
+    compPlayer.playerDice.pop();
+  }
+  console.log(compPlayer.playerSel);
+};
 //globals
 let playerOne = new Player();
 let computerPlayer = new Player();
@@ -422,6 +492,7 @@ $(document).ready(function(){
     playerOne.turnNum++;
     turnStr += playerOne.turnNum;
     $('#myTurn').text(turnStr);
-    $('#formBut').prop('disabled', false);
+    computerInit();
+    computerTurn();
   });
 });
