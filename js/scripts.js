@@ -49,7 +49,7 @@ class Player{
   score = 0;
   rollScore = 0;
   turnNum = 1;
-  winningScore = 1000; //Should be 5000 for non testing
+  winningScore = 5000; //Should be 5000 for non testing
   playerDice = [];
   playerRoll = [];
   playerSel = [];
@@ -297,11 +297,16 @@ function compoundScore(myNum, numAmt){
 function playerTurnInit(){
   playerOne.turnNum++;
   var turnStr = 'Turn: ';
+  var resetStr = 'Round Score: 0';
+  $('#roundScore').text(resetStr);
   turnStr += playerOne.turnNum;
   var myStr = "Your Turn!";
   $('#whichTurn').text(myStr);
   $('#myTurn').text(turnStr);
   $('#formBut').prop('disabled', false);
+  $('button').removeClass('btn-success');
+  $('#submitVal').addClass('btn-warning');
+  $('#endTurn').addClass('btn-danger');
 };
 function computerInit(){
   console.log('Computer is taking their turn...');
@@ -315,13 +320,13 @@ function computerInit(){
   initDice(computerPlayer.playerDice);
 };
 function computerTurn(){
+  var myStr = 'Computer Score: ';
   while(computerPlayer.playerDice.length >= 3 || computerPlayer.playerDice.length === 0){
     myRollClass.resetRollNum();
     selectedDice.resetRollNum();
     computerRoll();
     myRollClass.rollBust = isBust(computerPlayer, myRollClass);
     if(myRollClass.rollBust){
-      $('.busted').show();
       playerTurnInit();
       return;
     }
@@ -329,6 +334,18 @@ function computerTurn(){
     canSubmit(computerPlayer, selectedDice);
     calcScore(selectedDice, computerPlayer);
     console.log('Computer Scored ' +computerPlayer.rollScore+ ' this roll!');
+  }
+  computerPlayer.score += computerPlayer.rollScore;
+  myStr += computerPlayer.score;
+  $('#compScore').text(myStr);
+  if(computerPlayer.score >= computerPlayer.winningScore){
+    console.log('Winner')
+    var winningStr = 'The computers destroyed humanity in a mere ' + playerOne.turnNum + ' turn(s)!';
+    $('#youWin').show();
+    $('#youWin').find('h1').text(winningStr);
+    $('#formBut').prop('disabled', true);
+    $('#endTurn').prop('disabled', true);
+    return;
   }
   playerTurnInit();
   return;
@@ -376,8 +393,9 @@ function computerDecision(compPlayer){
   }
   console.log(compPlayer.playerSel);
 };
-function butSelection(myId){
-  $(myId).addClass('borderWrap');
+function buttonReset(){
+  $('button').prop('disabled', true);
+  $('#formBut').prop('disabled', false);
 };
 //globals
 let playerOne = new Player();
@@ -389,9 +407,11 @@ initDice(playerOne.playerDice);
 
 //Front-end logic
 $(document).ready(function(){
+  buttonReset();
   $('#butForm').submit(function(event){
     event.preventDefault();
     $('#formBut').prop('disabled', true);
+    $('busted').hide();
     console.log('butForm is being submitted');
     if(playerOne.playerDice.length === 0){
       initDice(playerOne.playerDice);
@@ -473,6 +493,7 @@ $(document).ready(function(){
     returnStr += playerOne.rollScore;
     $('#roundScore').text(returnStr);
     playerOne.resetPlayerSel();
+    $('#endTurn').prop('disabled', false);
   });
   $('#endTurn').click(function(){
     console.log('endTurn is being clicked');
@@ -482,7 +503,7 @@ $(document).ready(function(){
     if(!myRollClass.rollBust){
       playerOne.score += playerOne.rollScore;
       returnStr += playerOne.score;
-      $('#totalScore').text(returnStr);
+      $('#playerScore').text(returnStr);
     }
     for(var i = 0; i < 6; i++){
       var num = i + 1;
@@ -496,7 +517,7 @@ $(document).ready(function(){
     myRollClass.resetRollNum();
     if(playerOne.score >= playerOne.winningScore){
       console.log('Winner')
-      var winningStr = 'Congrats! You won in ' + playerOne.turnNum + ' turns!';
+      var winningStr = 'Congrats! You won in ' + playerOne.turnNum + ' turn(s)!';
       $('#youWin').show();
       $('#youWin').find('h1').text(winningStr);
       $('#formBut').prop('disabled', true);
