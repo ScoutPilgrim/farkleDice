@@ -294,6 +294,15 @@ function compoundScore(myNum, numAmt){
       break;
   }
 };
+function playerTurnInit(){
+  playerOne.turnNum++;
+  var turnStr = 'Turn: ';
+  turnStr += playerOne.turnNum;
+  var myStr = "Your Turn!";
+  $('#whichTurn').text(myStr);
+  $('#myTurn').text(turnStr);
+  $('#formBut').prop('disabled', false);
+};
 function computerInit(){
   console.log('Computer is taking their turn...');
   computerPlayer.playerEndTurn();
@@ -313,14 +322,15 @@ function computerTurn(){
     myRollClass.rollBust = isBust(computerPlayer, myRollClass);
     if(myRollClass.rollBust){
       $('.busted').show();
-      //setInterval(playerTurnInit, 2500);
+      playerTurnInit();
       return;
     }
     computerDecision(computerPlayer);
     canSubmit(computerPlayer, selectedDice);
     calcScore(selectedDice, computerPlayer);
-    console.log('Computer Scored ' +computerPlayer.rollScore+ ' this turn!');
+    console.log('Computer Scored ' +computerPlayer.rollScore+ ' this roll!');
   }
+  playerTurnInit();
   return;
 };
 function computerRoll(){
@@ -338,6 +348,8 @@ function computerDecision(compPlayer){
   computerPlayer.playerSel = [];
   for(var i = 0; i < compPlayer.playerRoll.length;i++){
     console.log(typeof compPlayer.playerRoll[i]);
+    var num = i + 1;
+    var myId = '#diceBut' + num;
     if(compPlayer.playerRoll[i] === 1){
       compPlayer.playerSel.push(compPlayer.playerRoll[i]);
     }
@@ -363,6 +375,9 @@ function computerDecision(compPlayer){
     compPlayer.playerDice.pop();
   }
   console.log(compPlayer.playerSel);
+};
+function butSelection(myId){
+  $(myId).addClass('borderWrap');
 };
 //globals
 let playerOne = new Player();
@@ -463,7 +478,6 @@ $(document).ready(function(){
     console.log('endTurn is being clicked');
     var returnStr = 'Total Score: ';
     var resetStr = 'Round Score: 0';
-    var turnStr = 'Turn: '
     $('.busted').hide();
     if(!myRollClass.rollBust){
       playerOne.score += playerOne.rollScore;
@@ -489,9 +503,6 @@ $(document).ready(function(){
       $('#endTurn').prop('disabled', true);
       return;
     }
-    playerOne.turnNum++;
-    turnStr += playerOne.turnNum;
-    $('#myTurn').text(turnStr);
     computerInit();
     computerTurn();
   });
